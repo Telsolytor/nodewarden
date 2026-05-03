@@ -1,0 +1,32 @@
+name: "KV Deployment Validation"
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-kv:
+    name: Check KV Configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Wrangler Dry-Run (Using KV Config)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # -c 参数允许你指定非默认的配置文件
+          # 这样会完全按照官方预设的 KV 逻辑进行校验
+          npx wrangler deploy --dry-run -c wrangler.kv.toml
